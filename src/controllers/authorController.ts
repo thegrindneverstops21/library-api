@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Author } from "../types";
 import { authors } from "../data/authors";
+import { v4 as uuidv4 } from "uuid";
 
 export function createAuthor(req: Request, res: Response): void {
     const { name, bio, birthYear } = req.body;
@@ -31,8 +32,8 @@ export function getAuthorById(req: Request, res: Response): void {
     res.status(200).json(author);
 }
 
-export function updateAuthor(req: Request, res: Response): void {   
-    const author = authors.find((a) => a.id === req.params.id); 
+export function updateAuthor(req: Request, res: Response): void {
+    const author = authors.find((a) => a.id === req.params.id);
 
     if(!author) {
         res.status(404).json({ message: "Author not found" });
