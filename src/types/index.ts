@@ -10,3 +10,17 @@ export interface AuthorInput {
     bio?: string;
     birthYear?: number;
 }
+
+export interface Book {
+    id: string;
+    title: string;
+    authorId: string;
+    year?: number;
+    genre?: string;
+}
+export interface BookInput {
+    title: string;
+    authorId: string;
+    year?: number;
+    genre?: string;
+}
