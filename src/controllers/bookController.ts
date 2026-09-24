@@ -1,21 +1,22 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {v4 as uuidv4 } from "uuid";
 import { authors } from "../data/authors";
 import { books } from "../data/books";
 import { Book } from "../types";
+import { NotFoundError, BadRequestError, ConflictError } from "../errors/AppErrors";
 
-export function createBook(req: Request, res: Response): void {
+export function createBook(req: Request, res: Response, next: NextFunction): void {
     const { title, authorId, year, genre } = req.body;
 
     const authorExists = authors.some((a) => a.id === authorId);
     if(!authorExists) {
-        res.status(400).json({error: `No author found with id '${authorId}'`});
+        next(new BadRequestError(`No author found with id '${authorId}'`));
         return;
     }
 
     const duplicate = books.some((b) => b.title.toLowerCase() === title.toLowerCase() && b.authorId === authorId);
     if(duplicate) {
-        res.status(400).json({error: `Book with title '${title}' already exists for this author`});
+        next(new ConflictError(`Book with title '${title}' already exists for this author`));
         return;
     }
 
@@ -35,22 +36,22 @@ export function getBooks(req: Request, res: Response): void {
     res.status(200).json(books);
 }
 
-export function getBookById(req: Request, res: Response): void {
+export function getBookById(req: Request, res: Response, next: NextFunction): void {
     const book = books.find((b) => b.id === req.params.id);
 
     if(!book) {
-        res.status(404).json({ message: "Book not found" });
+        next(new NotFoundError("Book not found"));
         return;
     }
 
     res.status(200).json(book);
 }
 
-export function updateBook(req: Request, res: Response): void { 
+export function updateBook(req: Request, res: Response, next: NextFunction): void { 
     const book = books.find((b) => b.id === req.params.id); 
 
     if(!book) {
-        res.status(404).json({ error: "Book not found"});
+        next(new NotFoundError("Book not found"));
         return
     }
 
@@ -59,7 +60,7 @@ export function updateBook(req: Request, res: Response): void {
     if(authorId) {
         const authorExists = authors.some((a) => a.id === authorId);
         if(!authorExists) {
-            res.status(400).json({ error: `No author found with id '${authorId}'`});
+            next(new BadRequestError(`No author found with id '${authorId}'`));
             return;
         }
     }
@@ -72,11 +73,11 @@ export function updateBook(req: Request, res: Response): void {
     res.status(200).json(book);
 }
 
-export function deleteBook(req: Request, res: Response): void {
+export function deleteBook(req: Request, res: Response, next: NextFunction): void {
     const index = books.findIndex((b) => b.id === req.params.id);
 
     if(index === -1){
-        res.status(404).json({error: "Book not found" });
+        next(new NotFoundError("Book not found"));
         return;
     }
 
